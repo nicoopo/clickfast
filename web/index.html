@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClickFast</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>ClickFast</h1>
+    <input id="username" type="text" placeholder="Ton pseudo" maxlength="30">
+    <p>Temps : <span id="timer">5.0</span> s</p>
+    <p>Score : <span id="score">0</span></p>
+    <button id="click-btn">Clique !</button>
+    <button id="restart-btn" hidden>Rejouer</button>
+    <p id="message" role="status"></p>
+
+    <h2>Classement</h2>
+    <ol id="leaderboard"></ol>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
