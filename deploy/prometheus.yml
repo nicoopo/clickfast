@@ -1,0 +1,6 @@
+global:
+  scrape_interval: 5s        # court, pour voir les effets pendant le cours
+scrape_configs:
+  - job_name: scores-api
+    static_configs:
+      - targets: ['scores-api:3000']   # le nom du service, pas une adresse IP

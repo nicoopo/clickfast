@@ -1,0 +1,78 @@
+{
+  "uid": "clickfast",
+  "title": "ClickFast - API de scores",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Disponibilité (up)",
+      "description": "1 = Prometheus joint l'API, 0 = l'API ne répond plus du tout.",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "up{job=\"scores-api\"}" }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN" }, "1": { "text": "UP" } } }],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Trafic (requêtes/s)",
+      "description": "Requêtes servies par seconde, hors /metrics (le passage de Prometheus).",
+      "gridPos": { "x": 6, "y": 0, "w": 9, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{
+        "refId": "A",
+        "expr": "sum by (route) (rate(http_requests_total{job=\"scores-api\",route!=\"/metrics\"}[30s]))",
+        "legendFormat": "{{route}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Erreurs (part de 5xx)",
+      "description": "Part des réponses en 5xx. Base coupée : l'API répond 503, cette courbe monte alors que up reste à 1.",
+      "gridPos": { "x": 15, "y": 0, "w": 9, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{
+        "refId": "A",
+        "expr": "(sum(rate(http_requests_total{job=\"scores-api\",status=~\"5..\"}[30s])) or vector(0)) / sum(rate(http_requests_total{job=\"scores-api\",route!=\"/metrics\"}[30s]))",
+        "legendFormat": "5xx"
+      }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 } }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Latence (p95)",
+      "description": "95 % des requêtes répondent en moins de ce temps.",
+      "gridPos": { "x": 0, "y": 8, "w": 15, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{
+        "refId": "A",
+        "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"scores-api\",route!=\"/metrics\"}[30s])))",
+        "legendFormat": "p95"
+      }],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Scores enregistrés depuis le démarrage",
+      "description": "Métrique métier : repart de 0 si l'API redémarre.",
+      "gridPos": { "x": 15, "y": 8, "w": 9, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "scores_recorded_total{job=\"scores-api\"}" }],
+      "options": { "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    }
+  ]
+}
