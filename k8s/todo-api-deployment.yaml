@@ -1,0 +1,27 @@
+# L'API de scores ClickFast (nommée todo-api pour tenir le contrat du sujet).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-api
+  namespace: todo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-api
+  template:
+    metadata:
+      labels:
+        app: todo-api
+    spec:
+      containers:
+        - name: todo-api
+          # Un sha précis, jamais latest : la pipeline le remplace à chaque déploiement.
+          image: nicopoo/clickfast-api:f308768286373d93793922e65600fdda61670563
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: todo-config
+            - secretRef:
+                name: todo-secret
