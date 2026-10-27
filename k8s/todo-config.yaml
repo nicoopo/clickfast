@@ -1,0 +1,11 @@
+# Ce qui n'est pas sensible. Les mots de passe vivent dans todo-secret, hors du dépôt.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-config
+  namespace: todo
+data:
+  # Le nom du Service de la base : le DNS du cluster le résout, jamais une IP ni localhost.
+  DB_HOST: todo-db
+  DB_PORT: "5432"
+  NODE_ENV: production

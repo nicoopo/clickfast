@@ -4,3 +4,4 @@ __pycache__/
 .idea/
 docker-compose.override.yml
 deploy_key
+k8s/todo-secret.yaml
