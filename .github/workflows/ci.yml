@@ -129,7 +129,9 @@ jobs:
                 -o UserKnownHostsFile="$RUNNER_TEMP/known_hosts")
           TARGET="$DEPLOY_USER@$DEPLOY_HOST"
 
-          scp "${OPTS[@]}" -P "$DEPLOY_PORT" deploy/compose.yml "$TARGET:/srv/clickfast/compose.yml"
+          # La config de surveillance est du code : elle part avec le déploiement, jamais éditée en prod.
+          scp "${OPTS[@]}" -P "$DEPLOY_PORT" -r deploy/compose.yml deploy/prometheus.yml deploy/grafana \
+            "$TARGET:/srv/clickfast/"
           ssh "${OPTS[@]}" -p "$DEPLOY_PORT" "$TARGET" \
             "cd /srv/clickfast && REGISTRY_USER='$REGISTRY_USER' TAG='$TAG' docker compose up -d --remove-orphans"
 
