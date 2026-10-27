@@ -1,3 +1,4 @@
+/* global createGame */
 const GAME_DURATION = 5000;
 // Même hôte que la page, port 3000 : l'API est appelée par le navigateur, pas par nginx.
 const API_URL = `${location.protocol}//${location.hostname || 'localhost'}:3000`;
@@ -10,24 +11,17 @@ const messageEl = document.getElementById('message');
 const usernameEl = document.getElementById('username');
 const leaderboardEl = document.getElementById('leaderboard');
 
-let score = 0;
-let startTime = null;
-let finished = false;
+let game = createGame(GAME_DURATION);
 
 clickBtn.addEventListener('click', () => {
-  if (finished) return;
-  if (startTime === null) {
-    startTime = Date.now();
-    tick();
-  }
-  score++;
-  scoreEl.textContent = score;
+  const firstClick = !game.started();
+  if (!game.click()) return;
+  scoreEl.textContent = game.score();
+  if (firstClick) tick();
 });
 
 restartBtn.addEventListener('click', () => {
-  score = 0;
-  startTime = null;
-  finished = false;
+  game = createGame(GAME_DURATION);
   scoreEl.textContent = '0';
   timerEl.textContent = (GAME_DURATION / 1000).toFixed(1);
   messageEl.textContent = '';
@@ -36,14 +30,13 @@ restartBtn.addEventListener('click', () => {
 });
 
 function tick() {
-  const remaining = GAME_DURATION - (Date.now() - startTime);
-  if (remaining <= 0) return endGame();
-  timerEl.textContent = (remaining / 1000).toFixed(1);
+  if (game.isFinished()) return endGame();
+  timerEl.textContent = (game.remaining() / 1000).toFixed(1);
   requestAnimationFrame(tick);
 }
 
 async function endGame() {
-  finished = true;
+  const score = game.score();
   timerEl.textContent = '0.0';
   clickBtn.disabled = true;
   restartBtn.hidden = false;
