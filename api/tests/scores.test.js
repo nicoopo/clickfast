@@ -53,3 +53,31 @@ test('un score supprimé disparaît du classement', async () => {
   expect(board.body.map((s) => s.id)).toEqual([kept.body.id]);
   expect((await request(app).delete(`/api/scores/${gone.body.id}`)).status).toBe(404);
 });
+
+describe('/metrics', () => {
+  const count = (text, labels) => {
+    const line = text.split('\n').find((l) => l.startsWith(`http_requests_total{${labels}}`));
+    return line ? Number(line.split(' ').pop()) : 0;
+  };
+
+  test('répond en texte brut, et 3 appels font +3 exactement', async () => {
+    const before = await request(app).get('/metrics');
+    expect(before.headers['content-type']).toMatch(/^text\/plain/);
+    const labels = 'method="GET",route="/api/scores",status="200"';
+    const start = count(before.text, labels);
+
+    for (let i = 0; i < 3; i++) await request(app).get('/api/scores');
+
+    const after = await request(app).get('/metrics');
+    expect(count(after.text, labels)).toBe(start + 3);
+  });
+
+  test('les 404 sont comptés, et un id ne devient jamais un label', async () => {
+    await request(app).get('/route/inconnue');
+    await request(app).get('/api/scores/123456');
+    const { text } = await request(app).get('/metrics');
+    expect(count(text, 'method="GET",route="unmatched",status="404"')).toBeGreaterThan(0);
+    expect(count(text, 'method="GET",route="/api/scores/:id",status="404"')).toBeGreaterThan(0);
+    expect(text).not.toContain('route="/api/scores/123456"');
+  });
+});

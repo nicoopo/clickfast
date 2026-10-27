@@ -1,4 +1,5 @@
 const express = require('express');
+const client = require('prom-client');
 
 async function initDb(pool) {
   await pool.query(`CREATE TABLE IF NOT EXISTS scores (
@@ -9,8 +10,49 @@ async function initDb(pool) {
   )`);
 }
 
+function createMetrics() {
+  const register = new client.Registry();
+  client.collectDefaultMetrics({ register });
+  const labelNames = ['method', 'route', 'status'];
+  return {
+    register,
+    requests: new client.Counter({
+      name: 'http_requests_total',
+      help: 'Nombre total de requetes HTTP servies',
+      labelNames,
+      registers: [register],
+    }),
+    duration: new client.Histogram({
+      name: 'http_request_duration_seconds',
+      help: 'Duree des requetes HTTP en secondes',
+      labelNames,
+      buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
+      registers: [register],
+    }),
+    scoresRecorded: new client.Counter({
+      name: 'scores_recorded_total',
+      help: 'Nombre de scores enregistres depuis le demarrage',
+      registers: [register],
+    }),
+  };
+}
+
 function createApp(pool) {
+  const metrics = createMetrics();
   const app = express();
+
+  app.use((req, res, next) => {
+    const stop = metrics.duration.startTimer();
+    res.on('finish', () => {
+      // La route déclarée (/api/scores/:id), jamais l'URL réelle : un id en label ferait exploser Prometheus.
+      const route = req.route ? req.baseUrl + req.route.path : 'unmatched';
+      const labels = { method: req.method, route, status: res.statusCode };
+      metrics.requests.inc(labels);
+      stop(labels);
+    });
+    next();
+  });
+
   app.use(express.json({ limit: '1kb' }));
   app.use((req, res, next) => {
     res.set('Access-Control-Allow-Origin', '*');
@@ -35,6 +77,11 @@ function createApp(pool) {
 
   app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
+  app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', metrics.register.contentType);
+    res.send(await metrics.register.metrics());
+  });
+
   app.post('/api/scores', (req, res, next) => {
     const { username, score } = req.body || {};
     if (typeof username !== 'string' || !username.trim() || username.trim().length > 30) {
@@ -50,6 +97,7 @@ function createApp(pool) {
       'INSERT INTO scores (username, score) VALUES ($1, $2) RETURNING id, username, score',
       [req.body.username.trim(), req.body.score],
     );
+    metrics.scoresRecorded.inc();
     res.status(201).json(rows[0]);
   }));
 
