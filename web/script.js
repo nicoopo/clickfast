@@ -48,7 +48,7 @@ async function endGame() {
     return;
   }
   try {
-    const res = await fetch(`${API_URL}/scores`, {
+    const res = await fetch(`${API_URL}/api/scores`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, score }),
@@ -64,7 +64,7 @@ async function endGame() {
 
 async function loadLeaderboard() {
   try {
-    const res = await fetch(`${API_URL}/scores`, { signal: AbortSignal.timeout(5000) });
+    const res = await fetch(`${API_URL}/api/scores`, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const scores = await res.json();
     leaderboardEl.replaceChildren(...scores.map((s) => {
