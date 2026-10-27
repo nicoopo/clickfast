@@ -19,7 +19,7 @@ module.exports = [
     languageOptions: { sourceType: 'script', globals: { ...globals.browser } },
   },
   {
-    files: ['tests/**/*.js'],
+    files: ['**/tests/**/*.js'],
     languageOptions: { globals: { ...globals.jest } },
   },
 ];
