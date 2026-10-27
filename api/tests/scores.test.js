@@ -43,6 +43,18 @@ test.each([
   expect(rows[0].n).toBe(0);
 });
 
+test('le classement renvoie id, username et score, du meilleur au moins bon', async () => {
+  await request(app).post('/api/scores').send({ username: 'lent', score: 5 });
+  await request(app).post('/api/scores').send({ username: 'rapide', score: 80 });
+
+  const board = await request(app).get('/api/scores');
+  expect(board.status).toBe(200);
+  expect(board.body).toEqual([
+    { id: 2, username: 'rapide', score: 80 },
+    { id: 1, username: 'lent', score: 5 },
+  ]);
+});
+
 test('un score supprimé disparaît du classement', async () => {
   const kept = await request(app).post('/api/scores').send({ username: 'garde', score: 10 });
   const gone = await request(app).post('/api/scores').send({ username: 'efface', score: 99 });
