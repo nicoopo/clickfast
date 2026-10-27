@@ -1,4 +1,5 @@
 # ClickFast
+[![CI](https://github.com/nicoopo/clickfast/actions/workflows/ci.yml/badge.svg)](https://github.com/nicoopo/clickfast/actions/workflows/ci.yml)
 
 <!-- À ÉCRIRE AVEC TES MOTS : ce que fait le jeu, en 2-3 phrases. -->
 
