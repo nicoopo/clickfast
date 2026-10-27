@@ -103,7 +103,7 @@ function createApp(pool) {
 
   app.get('/api/scores', withDb(async (req, res) => {
     const { rows } = await pool.query(
-      'SELECT id, username, score FROM scores ORDER BY score DESC, created_at ASC LIMIT 10',
+      'SELECT id, score FROM scores ORDER BY score DESC, created_at ASC LIMIT 10',
     );
     res.json(rows);
   }));
