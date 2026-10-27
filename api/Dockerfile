@@ -1,9 +1,9 @@
-FROM node:22.12.0-alpine3.20 AS deps
+FROM node:24.11.1-alpine3.22 AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-FROM node:22.12.0-alpine3.20
+FROM node:24.11.1-alpine3.22
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
