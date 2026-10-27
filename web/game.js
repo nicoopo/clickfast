@@ -5,7 +5,7 @@ function createGame(duration = 5000, now = () => Date.now()) {
 
   const remaining = () => (startTime === null ? duration : Math.max(0, duration - (now() - startTime)));
   const isFinished = () => startTime !== null && remaining() === 0;
-
+//test
   return {
     click() {
       if (isFinished()) return false;
