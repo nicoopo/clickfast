@@ -1,0 +1,4 @@
+# Le contexte est la racine du repo : seule la clé publique doit partir au build,
+# jamais deploy_key (la privée) ni .env.
+*
+!deploy_key.pub
