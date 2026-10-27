@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: todo-ingress
+  namespace: todo
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: todo.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: todo-api
+                # Le port du Service (80), pas celui du conteneur (3000).
+                port:
+                  number: 80
