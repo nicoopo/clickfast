@@ -82,9 +82,13 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # vm-prod tourne sur un poste ARM : l'image doit exister en arm64, pas seulement en amd64.
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
         with:
           context: ./${{ matrix.service }}
+          platforms: linux/amd64,linux/arm64
           push: ${{ env.PUBLISH == 'true' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/clickfast-${{ matrix.service }}:${{ github.sha }}
 
