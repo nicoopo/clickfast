@@ -5,7 +5,7 @@ metadata:
   name: todo-api
   namespace: todo
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: todo-api
@@ -17,7 +17,7 @@ spec:
       containers:
         - name: todo-api
           # Un sha précis, jamais latest : la pipeline le remplace à chaque déploiement.
-          image: nicopoo/clickfast-api:f308768286373d93793922e65600fdda61670563
+          image: nicopoo/clickfast-api:357ce8bd9dac0f0ac4e1c8822486e85b1fe481fa
           ports:
             - containerPort: 3000
           envFrom:
