@@ -20,4 +20,11 @@ const pool = new Pool({
 pool.on('error', (err) => console.error('Connexion Postgres perdue :', err.message));
 
 const port = Number(process.env.PORT || 3000);
-createApp(pool).listen(port, () => console.log(`API scores sur le port ${port}`));
+const server = createApp(pool).listen(port, () => console.log(`API scores sur le port ${port}`));
+
+// En PID 1 dans un conteneur, Node ignore SIGTERM par défaut : Kubernetes attendait alors
+// 30 s avant de le tuer. On termine les requêtes en cours, puis on sort proprement.
+process.on('SIGTERM', () => {
+  console.log('SIGTERM reçu, arrêt propre');
+  server.close(() => pool.end().finally(() => process.exit(0)));
+});
