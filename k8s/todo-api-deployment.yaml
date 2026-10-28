@@ -17,7 +17,7 @@ spec:
       containers:
         - name: todo-api
           # Un sha précis, jamais latest : la pipeline le remplace à chaque déploiement.
-          image: nicopoo/clickfast-api:357ce8bd9dac0f0ac4e1c8822486e85b1fe481fa
+          image: nicopoo/clickfast-api:ef186dea176c978eb3fa4c46621c43ef8fe1b23d
           ports:
             - containerPort: 3000
           envFrom:
@@ -25,3 +25,19 @@ spec:
                 name: todo-config
             - secretRef:
                 name: todo-secret
+          # Limite connue : /health ne touche pas la base. Les deux sondes disent "le serveur HTTP écoute",
+          # jamais "l'application rend le service" (base coupée : pod Ready, et pourtant 503).
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 2
+            periodSeconds: 3
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
